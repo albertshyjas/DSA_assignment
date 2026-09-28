@@ -1,0 +1,271 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+/* Structure for Expression Tree Node */
+typedef struct Node
+{
+    char data;
+    struct Node *left;
+    struct Node *right;
+} Node;
+
+/* Stack for Expression Tree */
+Node *treeStack[50];
+int top = -1;
+
+/* Stack for Postfix Evaluation */
+int valueStack[50];
+int valueTop = -1;
+
+/* Create a new tree node */
+Node *createNode(char data)
+{
+    Node *newNode = (Node *)malloc(sizeof(Node));
+
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+
+    return newNode;
+}
+
+/* Push node into tree stack */
+void pushTree(Node *node)
+{
+    treeStack[++top] = node;
+}
+
+/* Pop node from tree stack */
+Node *popTree()
+{
+    return treeStack[top--];
+}
+
+/* Check whether character is an operator */
+int isOperator(char ch)
+{
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/');
+}
+
+/* Construct Expression Tree from postfix expression */
+Node *constructTree(char postfix[])
+{
+    int i;
+    char ch;
+
+    top = -1;
+
+    for (i = 0; postfix[i] != '\0'; i++)
+    {
+        ch = postfix[i];
+
+        /* Ignore spaces */
+        if (ch == ' ')
+            continue;
+
+        /* If operand */
+        if (isdigit(ch))
+        {
+            Node *node = createNode(ch);
+            pushTree(node);
+        }
+
+        /* If operator */
+        else if (isOperator(ch))
+        {
+            Node *node = createNode(ch);
+
+            node->right = popTree();
+            node->left = popTree();
+
+            pushTree(node);
+        }
+    }
+
+    return popTree();
+}
+
+/* Inorder Traversal */
+void inorder(Node *root)
+{
+    if (root != NULL)
+    {
+        inorder(root->left);
+        printf("%c ", root->data);
+        inorder(root->right);
+    }
+}
+
+/* Preorder Traversal */
+void preorder(Node *root)
+{
+    if (root != NULL)
+    {
+        printf("%c ", root->data);
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+/* Postorder Traversal */
+void postorder(Node *root)
+{
+    if (root != NULL)
+    {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%c ", root->data);
+    }
+}
+
+/* Apply operator */
+int calculate(int a, int b, char op)
+{
+    switch (op)
+    {
+        case '+':
+            return a + b;
+
+        case '-':
+            return a - b;
+
+        case '*':
+            return a * b;
+
+        case '/':
+            return a / b;
+    }
+
+    return 0;
+}
+
+/* Evaluate postfix expression using stack */
+int evaluatePostfix(char postfix[])
+{
+    int i;
+    char ch;
+
+    valueTop = -1;
+
+    for (i = 0; postfix[i] != '\0'; i++)
+    {
+        ch = postfix[i];
+
+        /* Ignore spaces */
+        if (ch == ' ')
+            continue;
+
+        /* If operand */
+        if (isdigit(ch))
+        {
+            valueStack[++valueTop] = ch - '0';
+        }
+
+        /* If operator */
+        else if (isOperator(ch))
+        {
+            int b = valueStack[valueTop--];
+            int a = valueStack[valueTop--];
+
+            int result = calculate(a, b, ch);
+
+            valueStack[++valueTop] = result;
+        }
+    }
+
+    return valueStack[valueTop];
+}
+
+/* Evaluate Expression Tree */
+int evaluateTree(Node *root)
+{
+    int leftValue, rightValue;
+
+    if (root == NULL)
+        return 0;
+
+    /* If operand */
+    if (isdigit(root->data))
+        return root->data - '0';
+
+    /* Evaluate left and right subtrees */
+    leftValue = evaluateTree(root->left);
+    rightValue = evaluateTree(root->right);
+
+    return calculate(leftValue, rightValue, root->data);
+}
+
+/* Display Expression Tree */
+void displayTree(Node *root, int space)
+{
+    int i;
+
+    if (root == NULL)
+        return;
+
+    space += 5;
+
+    /* Display right subtree first */
+    displayTree(root->right, space);
+
+    printf("\n");
+
+    for (i = 5; i < space; i++)
+        printf(" ");
+
+    printf("%c\n", root->data);
+
+    /* Display left subtree */
+    displayTree(root->left, space);
+}
+
+/* Main function */
+int main()
+{
+    char postfix[] = "8 3 2 * + 6 2 / -";
+    Node *root;
+
+    printf("====================================\n");
+    printf("     EXPRESSION TREE PROGRAM\n");
+    printf("====================================\n");
+
+    printf("\nPostfix Expression:\n");
+    printf("%s\n", postfix);
+
+    /* Construct Expression Tree */
+    root = constructTree(postfix);
+
+    /* Display tree */
+    printf("\nExpression Tree:\n");
+    displayTree(root, 0);
+
+    /* Traversals */
+    printf("\nInorder Traversal:\n");
+    inorder(root);
+
+    printf("\n\nPreorder Traversal:\n");
+    preorder(root);
+
+    printf("\n\nPostorder Traversal:\n");
+    postorder(root);
+
+    /* Postfix Evaluation */
+    printf("\n\n------------------------------------\n");
+    printf("Stack-Based Postfix Evaluation\n");
+    printf("------------------------------------\n");
+
+    printf("Result = %d\n", evaluatePostfix(postfix));
+
+    /* Expression Tree Evaluation */
+    printf("\n------------------------------------\n");
+    printf("Expression Tree Evaluation\n");
+    printf("------------------------------------\n");
+
+    printf("Result = %d\n", evaluateTree(root));
+
+    printf("\n====================================\n");
+
+    return 0;
+}
