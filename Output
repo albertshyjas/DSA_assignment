@@ -1,0 +1,40 @@
+====================================
+     EXPRESSION TREE PROGRAM
+====================================
+
+Postfix Expression:
+8 3 2 * + 6 2 / -
+
+Expression Tree:
+
+          /
+     6
+          2
+
+     -
+          *
+     +
+          8
+          3
+          2
+
+Inorder Traversal:
+8 + 3 * 2 - 6 / 2
+
+Preorder Traversal:
+- + 8 * 3 2 / 6 2
+
+Postorder Traversal:
+8 3 2 * + 6 2 / -
+
+------------------------------------
+Stack-Based Postfix Evaluation
+------------------------------------
+Result = 11
+
+------------------------------------
+Expression Tree Evaluation
+------------------------------------
+Result = 11
+
+====================================
